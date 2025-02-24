@@ -1,0 +1,5 @@
+picky
+*.o
+.cache
+compile_commands.json
+TODO
