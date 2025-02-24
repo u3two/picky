@@ -13,13 +13,6 @@
 #include "shm.h"
 #include "color_conv.h"
 
-void xy_to_rgb(AppState *state, int x, int y, int *red, int *green, int *blue)
-{
-    double saturation = (double)x/state->win_width;
-    double value = 1 - (double)y/state->win_height;
-    hsl_to_rgb(state->hue, saturation, value, red, green, blue);
-}
-
 void draw_background(AppState *state, int32_t stride, uint8_t *shm_pool_data)
 {
     for (int x = 0; x < state->win_width; x++) {
@@ -175,6 +168,7 @@ void wayland_destroy(AppState *state)
 void event_loop(AppState *state)
 {
     do {
+	// TODO: limit framerate (via callbacks?)
 	if (state->redraw) {
 	    draw_frame(state);
 	    state->redraw = false;

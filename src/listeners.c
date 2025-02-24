@@ -5,6 +5,7 @@
 #include <linux/input-event-codes.h>
 
 #include "appstate.h"
+#include "color_conv.h"
 #include "macros.h"
 #include "config.h"
 
@@ -127,9 +128,14 @@ static void wl_pointer_button(void *data, struct wl_pointer *pointer,
 			      uint32_t button, uint32_t state)
 {
     (void) pointer, (void) time, (void) serial, (void) state;
+    AppState *app_state = data;
 
-    AppState *client_state = data;
-    DEBUG("click %d at %d %d", button, client_state->mouse_x, client_state->mouse_y);
+    if (button == BTN_LEFT) {
+	int32_t r,g,b;
+	xy_to_rgb(app_state, app_state->mouse_x, app_state->mouse_y, &r, &g, &b);
+	printf("%02X%02X%02X", r, g, b);
+	app_state->running = false;
+    }
 }
 
 static const struct wl_pointer_listener pointer_listener = {

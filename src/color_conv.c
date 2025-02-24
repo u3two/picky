@@ -29,3 +29,10 @@ void hsl_to_rgb(int32_t hue, double saturation, double value,
     *green = (g1 + m) * 255;
     *blue = (b1 + m) * 255;
 }
+
+void xy_to_rgb(AppState *state, int x, int y, int *red, int *green, int *blue)
+{
+    double saturation = (double)x/state->win_width;
+    double value = 1 - (double)y/state->win_height;
+    hsl_to_rgb(state->hue, saturation, value, red, green, blue);
+}

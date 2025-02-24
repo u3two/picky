@@ -5,7 +5,7 @@ PKGS = wayland-client
 PKG_CFLAGS = $(shell $(PKG_CONFIG) --cflags $(PKGS))
 PKG_LIBS = $(shell $(PKG_CONFIG) --libs $(PKGS))
 
-CFLAGS = -Wall -Wextra $(PKG_CFLAGS) -DDEBUG_ENABLE -Iprotocols/include
+CFLAGS = -Wall -Wextra $(PKG_CFLAGS) -Iprotocols/include # -DDEBUG_ENABLE
 DEBUG_FLAGS = -fsanitize=address,undefined -g3
 
 LD_FLAGS = -lm $(PKG_LIBS)
