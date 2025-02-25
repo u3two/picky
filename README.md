@@ -10,6 +10,19 @@ There may be some confusion regarding calling this program a "color picker". It'
 ## Usage/Examples
 Picking a color immediately closes the window and prints its hex representation on stdout.
 
+```
+usage: picky [OPTIONS]
+Options:
+  --help                    show this message
+  -w --width  [PIXELS]      set window width (default: 800)
+  -h --height [PIXELS]      set window height (default: 600)
+  -z --zoom-region [PIXELS] set the zoom region size (default: 75)
+  -b --zoom-border [PIXELS] set the zoom border size (default: 4)
+  -u --hue [DEG]            set hue (in HSV degrees) (default: 0)
+  -l --lock-hue             lock the hue (disable scroll)
+  -f --format [hex|rgb|hsv] set the output format (CSS-ish style)
+```
+
 | Keybind        | Description                              |
 |----------------|------------------------------------------|
 | Control        | "Zoom in" on the currently hovered color |
