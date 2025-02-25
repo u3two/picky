@@ -8,6 +8,7 @@
 #include "color_conv.h"
 #include "macros.h"
 #include "config.h"
+#include "draw.h"
 
 void noop() {}
 
@@ -54,7 +55,7 @@ static void xdg_surface_configure(void *data, struct xdg_surface *xdg_surface,
 
     wl_surface_commit(state->wl_surface);
     state->configured = true;
-    state->redraw = true;
+    state->redraw |= REDRAW_BACKGROUND;
 }
 
 const struct xdg_surface_listener xdg_surface_listener = {
@@ -82,6 +83,28 @@ const struct wl_buffer_listener buffer_listener = {
     .release = buffer_release
 };
 
+const struct wl_callback_listener frame_callback_listener;
+
+static void frame_callback_done(void *data, struct wl_callback *cb, uint32_t time)
+{
+    (void)time;
+    AppState *state = data;
+
+    cb = wl_surface_frame(state->wl_surface);
+    wl_callback_add_listener(cb, &frame_callback_listener, state);
+
+    if (state->redraw) {
+	draw_frame(state);
+	state->redraw = REDRAW_NONE;
+    }
+
+    wl_surface_commit(state->wl_surface);
+}
+
+const struct wl_callback_listener frame_callback_listener = {
+    .done = frame_callback_done,
+};
+
 static void wl_pointer_axis(void *data, struct wl_pointer *pointer,
 			    uint32_t time, uint32_t axis, wl_fixed_t value)
 {
@@ -104,7 +127,9 @@ static void wl_pointer_axis(void *data, struct wl_pointer *pointer,
 	return;
     }
 
-    state->redraw = true;
+    state->redraw |= REDRAW_BACKGROUND;
+    if (state->ctrl_held)
+	state->redraw |= REDRAW_ZOOMED;
 }
 
 static void wl_pointer_motion(void *data, struct wl_pointer *pointer,
@@ -120,7 +145,7 @@ static void wl_pointer_motion(void *data, struct wl_pointer *pointer,
     state->mouse_y = y;
 
     if (state->ctrl_held)
-	state->redraw = true;
+	state->redraw |= REDRAW_ZOOMED;
 }
 
 static void wl_pointer_button(void *data, struct wl_pointer *pointer,

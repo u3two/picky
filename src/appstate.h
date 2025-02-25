@@ -4,12 +4,19 @@
 #include <wayland-client.h>
 #include <stdbool.h>
 
+// NOTE: this represents a bit field, the next value should be 4!
+typedef enum {
+    REDRAW_NONE = 0,
+    REDRAW_BACKGROUND = 1,
+    REDRAW_ZOOMED = 2,
+} Redraw;
+
 // NOTE: when adding a new field to this struct, always assign a default value
 // in the constructor (appstate.c)!
 typedef struct {
     bool running, configured;
     int32_t win_width, win_height;
-    bool redraw;
+    Redraw redraw;
 
     // colors
     int32_t hue;

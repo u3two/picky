@@ -8,7 +8,7 @@ void appstate_init(AppState *state)
 	.configured = false,
 	.win_width = PICKY_DEFAULT_WIDTH,
 	.win_height = PICKY_DEFAULT_HEIGHT,
-	.redraw = true,
+	.redraw = REDRAW_NONE,
 
 	// colors
 	.hue = 0,
