@@ -2,7 +2,7 @@
 
 #include <math.h>
 
-void hsl_to_rgb(int32_t hue, double saturation, double value,
+void hsv_to_rgb(int32_t hue, double saturation, double value,
 		int32_t *red, int32_t *green, int32_t *blue)
 {
     double chroma = value * saturation;
@@ -34,5 +34,5 @@ void xy_to_rgb(AppState *state, int x, int y, int *red, int *green, int *blue)
 {
     double saturation = (double)x/state->win_width;
     double value = 1 - (double)y/state->win_height;
-    hsl_to_rgb(state->hue, saturation, value, red, green, blue);
+    hsv_to_rgb(state->hue, saturation, value, red, green, blue);
 }

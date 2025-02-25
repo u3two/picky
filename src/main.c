@@ -5,11 +5,11 @@
 
 #include <wayland-client.h>
 
+#include "args.h"
 #include "macros.h"
 #include "appstate.h"
 #include "listeners.h"
 #include "config.h"
-#include "wayland-client-protocol.h"
 #include "draw.h"
 
 void wayland_init(AppState *state)
@@ -63,16 +63,13 @@ void event_loop(AppState *state)
 
 int main(int argc, char **argv)
 {
-    (void) argc, (void) argv;
+    Args args;
+    args_parse(&args, argc, argv);
 
     AppState state;
-    appstate_init(&state);
-
-    // TODO: parse args
+    appstate_init(&state, &args);
 
     wayland_init(&state);
-
     event_loop(&state);
-
     wayland_destroy(&state);
 }

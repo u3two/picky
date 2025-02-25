@@ -1,17 +1,19 @@
 #include "appstate.h"
-#include "config.h"
 
-void appstate_init(AppState *state)
+void appstate_init(AppState *state, Args *args)
 {
     *state = (AppState){
 	.running = true,
 	.configured = false,
-	.win_width = PICKY_DEFAULT_WIDTH,
-	.win_height = PICKY_DEFAULT_HEIGHT,
+	.win_width = args->win_width,
+	.win_height = args->win_height,
 	.redraw = REDRAW_NONE,
 
+	// runtime args
+	.args = args,
+
 	// colors
-	.hue = 0,
+	.hue = args->initial_hue,
 
 	// input
 	.shift_held = false,

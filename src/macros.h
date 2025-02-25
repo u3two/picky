@@ -39,4 +39,7 @@
 	__typeof__ (b) _b = (b);		\
 	_a < _b ? _a : _b; })
 
+#define STRINGIFY(x) #x
+#define STRINGIFY_EXP(x) STRINGIFY(x)
+
 #endif /* PICKY_MACROS_H */

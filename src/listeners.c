@@ -5,9 +5,9 @@
 #include <linux/input-event-codes.h>
 
 #include "appstate.h"
+#include "args.h"
 #include "color_conv.h"
 #include "macros.h"
-#include "config.h"
 #include "draw.h"
 
 void noop() {}
@@ -20,8 +20,8 @@ static void xdg_toplevel_configure(void *data, struct xdg_toplevel *xdg_toplevel
     AppState *state = data;
     // as per protocol spec, width/height may be zero.
     // in that situation we should decide our own window dimensions.
-    state->pending.win_width = width ? width : PICKY_DEFAULT_WIDTH;
-    state->pending.win_height = height ? height : PICKY_DEFAULT_HEIGHT;
+    state->pending.win_width = width ? width : state->args->win_width;
+    state->pending.win_height = height ? height : state->args->win_height;
     state->pending.win_dimensions = true;
 }
 
@@ -111,8 +111,11 @@ static void wl_pointer_axis(void *data, struct wl_pointer *pointer,
     (void) pointer, (void) time, (void) axis;
 
     AppState *state = data;
-    double as_double = wl_fixed_to_double(value);
 
+    if (state->args->lock_hue)
+	return; 
+
+    double as_double = wl_fixed_to_double(value);
     // note: I don't really know what determines value's actual value, but it seems like
     // the scroll direction is conveyed by the sign, and that's all we care for.
     if (as_double > 0) {
@@ -123,8 +126,6 @@ static void wl_pointer_axis(void *data, struct wl_pointer *pointer,
 	state->hue -= state->shift_held ? 15 : 1;
 	if (state->hue < 0)
 	    state->hue = 360;
-    } else {
-	return;
     }
 
     state->redraw |= REDRAW_BACKGROUND;
@@ -158,7 +159,23 @@ static void wl_pointer_button(void *data, struct wl_pointer *pointer,
     if (button == BTN_LEFT) {
 	int32_t r,g,b;
 	xy_to_rgb(app_state, app_state->mouse_x, app_state->mouse_y, &r, &g, &b);
-	printf("%02X%02X%02X", r, g, b);
+
+	switch (app_state->args->output_format) {
+	case OUTFORMAT_HEX:
+	    printf("%02X%02X%02X", r, g, b);
+	    break;
+	case OUTFORMAT_RGB:
+	    printf("rgb(%d, %d, %d)", r, g, b);
+	    break;
+	case OUTFORMAT_HSV:
+	    printf("hsv(%ddeg, %d%%, %d%%)",
+		   app_state->hue,
+		   (int)((double)app_state->mouse_x/app_state->win_width * 100),
+		   (int)((1 - (double)app_state->mouse_y/app_state->win_height) * 100));
+	    break;
+	case OUTFORMAT_INVALID: __builtin_unreachable();
+	}
+
 	app_state->running = false;
     }
 }
@@ -181,7 +198,7 @@ static void wl_keyboard_key(void *data, struct wl_keyboard *keyboard, uint32_t s
 			    uint32_t time, uint32_t key, enum wl_keyboard_key_state state)
 {
     (void) keyboard, (void) time, (void) serial;
-    AppState *client_state = data;
+    AppState *app_state = data;
 
     if (key == KEY_C && state == WL_KEYBOARD_KEY_STATE_PRESSED) {
 	// TODO: copy to clipboard
@@ -189,16 +206,18 @@ static void wl_keyboard_key(void *data, struct wl_keyboard *keyboard, uint32_t s
 
     if (key == KEY_LEFTSHIFT) {
 	if (state == WL_KEYBOARD_KEY_STATE_PRESSED)
-	    client_state->shift_held = true;
+	    app_state->shift_held = true;
 	else if (state == WL_KEYBOARD_KEY_STATE_RELEASED)
-	    client_state->shift_held = false;
+	    app_state->shift_held = false;
     }
 
     if (key == KEY_LEFTCTRL) {
 	if (state == WL_KEYBOARD_KEY_STATE_PRESSED)
-	    client_state->ctrl_held = true;
-	else if (state == WL_KEYBOARD_KEY_STATE_RELEASED)
-	    client_state->ctrl_held = false;
+	    app_state->ctrl_held = true;
+	else if (state == WL_KEYBOARD_KEY_STATE_RELEASED) {
+	    app_state->ctrl_held = false;
+	    app_state->redraw |= REDRAW_BACKGROUND;
+	}
     }
 }
 

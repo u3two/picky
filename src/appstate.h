@@ -3,6 +3,7 @@
 
 #include <wayland-client.h>
 #include <stdbool.h>
+#include "args.h"
 
 // NOTE: this represents a bit field, the next value should be 4!
 typedef enum {
@@ -17,6 +18,9 @@ typedef struct {
     bool running, configured;
     int32_t win_width, win_height;
     Redraw redraw;
+
+    // runtime options
+    Args *args;
 
     // colors
     int32_t hue;
@@ -48,6 +52,6 @@ typedef struct {
     struct xdg_toplevel *xdg_toplevel;
 } AppState;
 
-void appstate_init(AppState *state);
+void appstate_init(AppState *state, Args *args);
 
 #endif

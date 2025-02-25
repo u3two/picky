@@ -5,7 +5,6 @@
 #include "macros.h"
 #include "appstate.h"
 #include "listeners.h"
-#include "config.h"
 #include "shm.h"
 #include "color_conv.h"
 
@@ -36,11 +35,11 @@ static void draw_zoomed(AppState *state, int32_t stride, uint8_t *shm_pool_data)
 
     // first, redraw the part of the screen that was covered by the zoomed view
     // in the previous frame
-    int x_start = MAX(0, zoomed_state.prev_mouse_x - PICKY_REGION_SIZE);
-    int x_end = MIN(state->win_width, zoomed_state.prev_mouse_x + PICKY_REGION_SIZE);
+    int x_start = MAX(0, zoomed_state.prev_mouse_x - state->args->zoom_region_size);
+    int x_end = MIN(state->win_width, zoomed_state.prev_mouse_x + state->args->zoom_region_size);
 
-    int y_start = MAX(0, zoomed_state.prev_mouse_y - PICKY_REGION_SIZE);
-    int y_end = MIN(state->win_height, zoomed_state.prev_mouse_y + PICKY_REGION_SIZE);
+    int y_start = MAX(0, zoomed_state.prev_mouse_y - state->args->zoom_region_size);
+    int y_end = MIN(state->win_height, zoomed_state.prev_mouse_y + state->args->zoom_region_size);
 
     int red, green, blue;
 
@@ -60,11 +59,11 @@ static void draw_zoomed(AppState *state, int32_t stride, uint8_t *shm_pool_data)
     wl_surface_damage_buffer(state->wl_surface, x_start, y_start, x_end - x_start, y_end - y_start);
 
     // now we can draw the new zoomed area
-    x_start = MAX(0, state->mouse_x - PICKY_REGION_SIZE);
-    x_end = MIN(state->win_width, state->mouse_x + PICKY_REGION_SIZE);
+    x_start = MAX(0, state->mouse_x - state->args->zoom_region_size);
+    x_end = MIN(state->win_width, state->mouse_x + state->args->zoom_region_size);
 
-    y_start = MAX(0, state->mouse_y - PICKY_REGION_SIZE);
-    y_end = MIN(state->win_height, state->mouse_y + PICKY_REGION_SIZE);
+    y_start = MAX(0, state->mouse_y - state->args->zoom_region_size);
+    y_end = MIN(state->win_height, state->mouse_y + state->args->zoom_region_size);
 
     xy_to_rgb(state, state->mouse_x, state->mouse_y, &red, &green, &blue);
 
@@ -72,8 +71,8 @@ static void draw_zoomed(AppState *state, int32_t stride, uint8_t *shm_pool_data)
 	for (int y = y_start; y < y_end; y++) {
 	    int idx = stride * y + x * 4;
 
-	    if (abs(y - y_start) < PICKY_BORDER_SIZE || abs(x - x_start) < PICKY_BORDER_SIZE ||
-		abs(y - y_end) < PICKY_BORDER_SIZE   || abs(x - x_end) < PICKY_BORDER_SIZE)
+	    if (abs(y - y_start) < state->args->zoom_border_size || abs(x - x_start) < state->args->zoom_border_size ||
+		abs(y - y_end) <= state->args->zoom_border_size   || abs(x - x_end) <= state->args->zoom_border_size)
 	    {
 		shm_pool_data[idx] = 255;
 		shm_pool_data[idx + 1] = 255;
